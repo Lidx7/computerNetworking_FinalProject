@@ -7,6 +7,7 @@ BUFFER_SIZE = 4096
 
 
 def main():
+    # Correct argument input check
     if len(sys.argv) < 3:
         print(f"Usage: {sys.argv[0]} <port> <algorithm>")
         return
