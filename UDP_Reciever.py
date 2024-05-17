@@ -1,3 +1,7 @@
+# **************************************************************** #
+#  simple translation of exercise 3 code. use for reference only!  #
+# **************************************************************** #
+
 import socket
 import struct
 import time
