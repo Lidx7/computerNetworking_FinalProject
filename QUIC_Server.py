@@ -1,49 +1,32 @@
-import asyncio
-import logging
-from aioquic.asyncio.protocol import QuicConnectionProtocol
-from aioquic.asyncio.server import QuicServer
-from aioquic.asyncio.ssl import create_self_signed_cert # TODO: fix this import problem or find a way to replace it
-from aioquic.quic.configuration import QuicConfiguration
-from aioquic.quic.events import HandshakeCompleted, StreamDataReceived
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+import socket
+import random
+import string
+import QUIC_Packet
 
 
-class EchoQuicProtocol(QuicConnectionProtocol):
-    def quic_event_received(self, event):
-        if isinstance(event, HandshakeCompleted):
-            print(f"Handshake completed with {event.session_resumed}")
-        elif isinstance(event, StreamDataReceived):
-            print(f"Data received on stream {event.stream_id}: {event.data}")
-            self._quic.send_stream_data(event.stream_id, event.data)
-            self._quic.send_stream_data(event.stream_id, b"", end_stream=True)
+def start_server(ip, port):
+    # Create a UDP socket
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+    # Bind the socket to the provided IP and port
+    server_socket.bind((ip, port))
+    print(f"UDP server listening on {ip}:{port}")
 
-async def run():
-    # Generate a self-signed certificate
-    cert, key = create_self_signed_cert()
+    cid_length = 16
+    cid_characters = string.ascii_letters + string.digits
 
-    # QUIC configuration
-    configuration = QuicConfiguration(is_client=False)
-    configuration.load_cert_chain(certfile=cert, keyfile=key)
+    while True:
+        connection_id = ''.join(random.choice(cid_characters) for _ in range(cid_length))
 
-    # Create the QUIC server
-    server = await QuicServer.create(
-        host='127.0.0.1',
-        port=4433,
-        configuration=configuration,
-        create_protocol=EchoQuicProtocol,
-    )
+        # Receive message from client
+        message, client_address = server_socket.recvfrom(1024)
+        print(f"Received message from {client_address}: {message.decode()}")
+        ivan = QUIC_Packet.Packet(1,"hello")
+        # Send a response back to the client
+        response = f"Received your message: {message.decode()}"
 
-    print("QUIC server running on 127.0.0.1:4433")
-
-    try:
-        await asyncio.Future()  # Run forever
-    finally:
-        server.close()
-        await server.wait_closed()
+        server_socket.sendto(ivan.encode(), client_address)
 
 
 if __name__ == "__main__":
-    asyncio.run(run())
+    start_server("127.0.0.1", 12345)

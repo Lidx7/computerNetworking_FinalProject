@@ -2,7 +2,7 @@ import struct
 import zlib
 
 
-class QUICPacket:
+class Packet:
     def __init__(self, packet_number, payload):
         self.packet_number = packet_number
         self.payload = payload
@@ -13,7 +13,7 @@ class QUICPacket:
         checksum = zlib.adler32(self.payload.encode('utf-8'))
         return checksum
 
-    def serialize(self):
+    def encode(self):
         # Serialize the packet data into bytes
         packet_number_bytes = struct.pack('!I', self.packet_number)
         checksum_bytes = struct.pack('!I', self.checksum)
@@ -22,7 +22,7 @@ class QUICPacket:
         return packet_number_bytes + checksum_bytes + payload_bytes
 
     @classmethod
-    def deserialize(cls, data):
+    def decode(cls, data):
         # Deserialize bytes into a QUICPacket object
         packet_number = struct.unpack('!I', data[:4])[0]
         checksum = struct.unpack('!I', data[4:8])[0]

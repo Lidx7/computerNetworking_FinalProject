@@ -1,7 +1,7 @@
 import socket
 import string
 import random
-import packet
+import QUIC_Packet
 def send_message(server_ip, server_port, message):
     # Create a UDP socket
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -11,7 +11,7 @@ def send_message(server_ip, server_port, message):
 
     try:
         connection_id = ''.join(random.choice(cid_characters) for _ in range(cid_length))
-        ivan = packet.QUICPacket(1,"anitaaaaa")
+        ivan = QUIC_Packet.Packet(1,"anitaaaaa")
         # Send the message to the server
         client_socket.sendto(ivan.encode(), (server_ip, server_port))
         print(f"Message sent to {server_ip}:{server_port}")
@@ -22,6 +22,7 @@ def send_message(server_ip, server_port, message):
     finally:
         # Close the socket
         client_socket.close()
+
 
 if __name__ == "__main__":
     send_message("127.0.0.1", 12345, "Hello, UDP Server!")
