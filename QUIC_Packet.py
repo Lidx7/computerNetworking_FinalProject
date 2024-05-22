@@ -1,28 +1,29 @@
-import struct
-import pickle
+import string
+class LargePacket:
+    id = ""
+    type = ""
+    def __init__(self, packet_id, packet_type):
+        self.id = packet_id
+        self.type = packet_type
 
-class Packet:
-    def __init__(self, packet_number, payload):
-        self.packet_number = packet_number
-        self.payload = payload
-        self.checksum = self.calculate_checksum()
+    def _str_(self):
+        return f"Packet ID: {self.id}, Packet Type: {self.type}"
 
-    def calculate_checksum(self):
-        # Simulated checksum calculation
-        return sum([ord(char) for char in self.payload])
+    def set_id(self, new_id):
+        self.id = new_id
 
-    def quicEncode(self):
-        # Serialize the packet object into bytes using pickle
-        return pickle.dumps(self)
+    def set_type(self, new_type):
+        self.type = new_type
 
-    def quicDecode(cls, data):
-        # Deserialize bytes into a QUICPacket object using pickle
-        try:
-            packet = pickle.loads(data)
-            if packet.checksum != packet.calculate_checksum():
-                raise ValueError("Checksum does not match, packet may be corrupted.")
-            return packet
-        except (pickle.PickleError, ValueError) as e:
-            print(f"Error decoding packet: {e}")
-            return None
+    def get_id(self):
+        return self.id
 
+    def get_type(self):
+        return self.type
+
+def turn_toString(LargePacket):
+    return str(LargePacket.get_id()) + "," + str(LargePacket.get_type())
+
+def turn_backString(a):
+    substring = a.split(',')
+    return substring
