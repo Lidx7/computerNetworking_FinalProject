@@ -11,27 +11,18 @@ class Packet:
         # Simulated checksum calculation
         return sum([ord(char) for char in self.payload])
 
-    def quicEncode(packet):
-        # For simplicity, let's assume the header is a fixed size (e.g., 8 bytes) and     payload is variable size.
-        header_format = '8s'  # 8 bytes string for header
-        payload_format = f'{len(packet.payload)}s'  # Variable length string for          payload
+    def quicEncode(self):
+        # Serialize the packet object into bytes using pickle
+        return pickle.dumps(self)
 
-        # Combine the formats
-        packet_format = header_format + payload_format
+    def quicDecode(cls, data):
+        # Deserialize bytes into a QUICPacket object using pickle
+        try:
+            packet = pickle.loads(data)
+            if packet.checksum != packet.calculate_checksum():
+                raise ValueError("Checksum does not match, packet may be corrupted.")
+            return packet
+        except (pickle.PickleError, ValueError) as e:
+            print(f"Error decoding packet: {e}")
+            return None
 
-        # Pack the data
-        encoded_packet = struct.pack(packet_format, packet.header.encode(), packet.payload.encode())
-        return encoded_packet
-    @classmethod
-    def quicDecode(encoded_packet):
-        # For simplicity, let's assume the header is always 8 bytes
-        header_format = '8s'
-        header_size = struct.calcsize(header_format)
-
-        # Extract the header
-        header = struct.unpack(header_format, encoded_packet[:header_size])[0].decode().strip('\x00')
-
-        # Extract the payload
-        payload = encoded_packet[header_size:].decode()
-
-        return QuicPacket(header, payload)

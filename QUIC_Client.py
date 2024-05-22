@@ -14,9 +14,11 @@ def send_message(server_ip, server_port, message):
     try:
         connection_id = ''.join(random.choice(cid_characters) for _ in range(cid_length))
         ivan = QUIC_Packet.Packet(1,"anitaaaaa")
+
         # Send the message to the server
-        client_socket.sendto(ivan.quicEncode().encode(), (server_ip, server_port))
+        client_socket.sendto(ivan.quicEncode(), (server_ip, server_port))
         print(f"Message sent to {server_ip}:{server_port}")
+
         # Receive the response from the server
         response, server_address = client_socket.recvfrom(1024)
         print(f"Received response from server: {response.decode()}")
