@@ -1,6 +1,5 @@
 import struct
-import zlib
-
+import pickle
 
 class Packet:
     def __init__(self, packet_number, payload):
@@ -9,38 +8,30 @@ class Packet:
         self.checksum = self.calculate_checksum()
 
     def calculate_checksum(self):
-        # Using zlib's adler32 for checksum calculation
-        checksum = zlib.adler32(self.payload.encode('utf-8'))
-        return checksum
+        # Simulated checksum calculation
+        return sum([ord(char) for char in self.payload])
 
-    def encode(self):
-        # Serialize the packet data into bytes
-        packet_number_bytes = struct.pack('!I', self.packet_number)
-        checksum_bytes = struct.pack('!I', self.checksum)
-        payload_bytes = self.payload.encode('utf-8')
+    def quicEncode(packet):
+        # For simplicity, let's assume the header is a fixed size (e.g., 8 bytes) and     payload is variable size.
+        header_format = '8s'  # 8 bytes string for header
+        payload_format = f'{len(packet.payload)}s'  # Variable length string for          payload
 
-        return packet_number_bytes + checksum_bytes + payload_bytes
+        # Combine the formats
+        packet_format = header_format + payload_format
 
+        # Pack the data
+        encoded_packet = struct.pack(packet_format, packet.header.encode(), packet.payload.encode())
+        return encoded_packet
     @classmethod
-    def decode(cls, data):
-        # Deserialize bytes into a QUICPacket object
-        packet_number = struct.unpack('!I', data[:4])[0]
-        checksum = struct.unpack('!I', data[4:8])[0]
-        payload = data[8:].decode('utf-8')
+    def quicDecode(encoded_packet):
+        # For simplicity, let's assume the header is always 8 bytes
+        header_format = '8s'
+        header_size = struct.calcsize(header_format)
 
-        packet = cls(packet_number, payload)
-        if packet.checksum != checksum:
-            raise ValueError("Checksum does not match, packet may be corrupted.")
+        # Extract the header
+        header = struct.unpack(header_format, encoded_packet[:header_size])[0].decode().strip('\x00')
 
-        return packet
+        # Extract the payload
+        payload = encoded_packet[header_size:].decode()
 
-
-
-# Example usage:
-# packet = QUICPacket(1, "Hello, QUIC!")
-# serialized_packet = packet.serialize()
-# print(f"Serialized packet: {serialized_packet}")
-#
-# deserialized_packet = QUICPacket.deserialize(serialized_packet)
-# print(
-#     f"Deserialized packet - Packet Number: {deserialized_packet.packet_number}, Payload: {deserialized_packet.payload}, Checksum: {deserialized_packet.checksum}")
+        return QuicPacket(header, payload)

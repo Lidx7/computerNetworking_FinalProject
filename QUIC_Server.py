@@ -21,11 +21,11 @@ def start_server(ip, port):
         # Receive message from client
         message, client_address = server_socket.recvfrom(1024)
         print(f"Received message from {client_address}: {message.decode()}")
-        ivan = QUIC_Packet.Packet(1,"hello")
         # Send a response back to the client
         response = f"Received your message: {message.decode()}"
 
-        server_socket.sendto(ivan.encode(), client_address)
+        ivan = QUIC_Packet.Packet(2, response)
+        server_socket.sendto(ivan.quicEncode().decode(), client_address)
 
 
 if __name__ == "__main__":
