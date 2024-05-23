@@ -18,14 +18,26 @@ def start_server(ip, port):
             server_socket.sendto(QUIC_Packet.turn_toString(packet).encode(),server_address)
     else:
         print("Invalid id")
-
+        return
+    sequance_number = 1
     while True:
         data, address =server_socket.recvfrom(1024)
         substring1 = QUIC_Packet.turn_backString(data.decode())
         if substring1[2] == "LargePacket":
             if substring1[1] == "terminate":
                 break
-        print(f"{substring1[0]} , {substring1[1]}")
+
+        if int(substring1[1]) != sequance_number:
+            bad_packet_sending = QUIC_Packet.LargePacket(326065646, "terminate")
+            server_socket.sendto(QUIC_Packet.turn_toString(bad_packet_sending).encode(), server_address)
+            sequance_number= sequance_number-sequance_number%5
+            print("{substring1[1]} does not arrived")
+            continue
+        if int(substring1[1])%5==0:
+            good_packet_sending = QUIC_Packet.LargePacket(326065646, "ACK")
+            server_socket.sendto(QUIC_Packet.turn_toString(good_packet_sending).encode(),server_address)
+        sequance_number = sequance_number+1
+        print(f" packet number {substring1[1]} , the data :{substring1[0]}")
     server_socket.close()
 
 
