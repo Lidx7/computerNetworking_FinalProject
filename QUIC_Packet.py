@@ -31,7 +31,7 @@ class smallPacket:
         self.data =data
         self.packet_type = "smallPacket"
 
-    def _str_(self):
+    def __str__(self):
         return f"Packet sequance number: {self.sequence_Number}, Packet data: {self.data}"
 
     def set_data(self, new_id):
@@ -47,12 +47,15 @@ class smallPacket:
         return self.data
 
 
-
-
 def turn_toString(LargePacket):
-    return str(LargePacket.get_id()) + "," + str(LargePacket.get_type()) +",LargePacket"
+    return str(LargePacket.get_id()) + "," + str(LargePacket.get_type()) + ", LargePacket"
+
+
 def turn_toString1(smallPacket):
-    return str(smallPacket.get_data()) + "," + str(smallPacket.get_number()) +",smallPacket"
+    return str(smallPacket.get_data()) + "," + str(smallPacket.get_number()) + ", smallPacket"
+
+
 def turn_backString(a):
     substring = a.split(',')
     return substring
+
