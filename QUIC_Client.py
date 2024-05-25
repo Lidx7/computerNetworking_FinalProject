@@ -35,8 +35,9 @@ def send_message(server_ip, server_port):
 
         stop_loop = False
 
-        for i in range(0, sending_loop):
-            if (file[(packet_data_buffer * buffer_counter): (packet_data_buffer * (buffer_counter + 1))]) == None:
+        for i in range(0, sending_loop+1):
+            # if (file[(packet_data_buffer * buffer_counter): (packet_data_buffer * (buffer_counter + 1))]) == None:
+            if  i==sending_loop:
                 packet = QUIC_Packet.LargePacket(sequence_number, "terminate")
                 client_socket.sendto(QUIC_Packet.turn_toString(packet).encode(), (server_ip, server_port))
                 break
@@ -73,5 +74,4 @@ def send_message(server_ip, server_port):
 
 if __name__ == "__main__":
     send_message("127.0.0.1", 12345)
-
 
