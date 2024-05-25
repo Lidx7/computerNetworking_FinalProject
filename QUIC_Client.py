@@ -2,8 +2,8 @@ import socket
 import string
 import random
 import QUIC_Packet
-file_size = 2 * 1000 * 1000
-sending_loop = file_size // 1000
+file_size = 10 * 1000 * 100
+sending_loop = file_size // 5000
 window_size = 5
 packet_data_buffer = 1000
 
@@ -15,6 +15,7 @@ def generate_random_data(size):
 def send_message(server_ip, server_port):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sequence_number = 1
+    buffer_counter = 0
 
     file = generate_random_data(file_size)
 
@@ -32,21 +33,25 @@ def send_message(server_ip, server_port):
             print("Invalid")
             return
 
+        stop_loop = False
+
         for i in range(0, sending_loop):
-            buffer_counter = 0
-            if i == (sending_loop - 1):
+            if (file[(packet_data_buffer * buffer_counter): (packet_data_buffer * (buffer_counter + 1))]) == None:
                 packet = QUIC_Packet.LargePacket(sequence_number, "terminate")
                 client_socket.sendto(QUIC_Packet.turn_toString(packet).encode(), (server_ip, server_port))
                 break
 
+
             for j in range(0, window_size):
                 #TODO: change packet1's name. give it a meaningful name
-                packet1 = QUIC_Packet.smallPacket(str(sequence_number), file[packet_data_buffer * buffer_counter :
-                                                                             packet_data_buffer * (buffer_counter + 1)])
+                packet1 = QUIC_Packet.smallPacket(str(sequence_number), file[(packet_data_buffer * buffer_counter) :
+                                                                             (packet_data_buffer * (buffer_counter + 1))])
                                                                           # This iterates over the file using a buffer
+                client_socket.sendto(QUIC_Packet.turn_toString1(packet1).encode(), (server_ip, server_port))
                 sequence_number += 1
                 buffer_counter += 1
-                client_socket.sendto(QUIC_Packet.turn_toString1(packet1).encode(), (server_ip, server_port))
+
+
             finish_sending = QUIC_Packet.LargePacket("214797367", "SYN")
             # Send the message to the server
             client_socket.sendto(QUIC_Packet.turn_toString(finish_sending).encode(), (server_ip, server_port))
