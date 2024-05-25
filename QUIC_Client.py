@@ -43,16 +43,22 @@ def send_message(server_ip, server_port):
                 #TODO: change packet1's name. give it a meaningful name
                 packet1 = QUIC_Packet.smallPacket(str(sequence_number), file[packet_data_buffer * buffer_counter :
                                                                              packet_data_buffer * (buffer_counter + 1)])
-                                                                            # This itertes over the file using a buffer
+                                                                          # This iterates over the file using a buffer
                 sequence_number += 1
                 buffer_counter += 1
                 client_socket.sendto(QUIC_Packet.turn_toString1(packet1).encode(), (server_ip, server_port))
-
+            finish_sending = QUIC_Packet.LargePacket("214797367", "SYN")
+            # Send the message to the server
+            client_socket.sendto(QUIC_Packet.turn_toString(finish_sending).encode(), (server_ip, server_port))
             response, server_address = client_socket.recvfrom(1024)
             subString = QUIC_Packet.turn_backString(response.decode())
 
             if subString[1] == "terminate":
-                sequence_number = sequence_number - window_size
+                if subString[0] == "326065646":
+                    sequence_number = sequence_number - window_size
+
+                else:
+                    sequence_number = int(subString[0])
             if subString[1] == "ACK":
                 print("ACK received")
 
@@ -62,3 +68,5 @@ def send_message(server_ip, server_port):
 
 if __name__ == "__main__":
     send_message("127.0.0.1", 12345)
+
+
