@@ -58,7 +58,7 @@ def start_server(ip, port):
             server_socket.sendto(QUIC_Packet.turn_toString(bad_packet_sending).encode(), server_address)
             stop_it = False
             sequence_number = missing_five
-            print("{substring1[1]} does not arrived")
+            print(f"{substring1[1]} does not arrived")
             continue
 
         if int(substring1[1]) % window_size == 0:
