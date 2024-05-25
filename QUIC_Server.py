@@ -28,19 +28,22 @@ def start_server(ip, port):
     sequence_number = 1
     five_packets = ""
     while True:
+        print('daniel ohed amiti')##########################
         data, address = server_socket.recvfrom(1024)
         substring1 = QUIC_Packet.turn_backString(data.decode()) #TODO: change substring1's name and give it a meaningful name
 
         if substring1[2] == "LargePacket":
+            print("ani bepace")
             if substring1[1]=="SYN":
                 if sequence_number % 5 - 1 != 0:
                     print(f"something went wrong,{sequence_number} was missing")
                     badpacketsending = QUIC_Packet.LargePacket("326065646", "terminate")
                     server_socket.sendto(QUIC_Packet.turn_toString(bad_packet_sending).encode(), server_address)
-                    stop_it=True
+                    stop_it = True
                     sequence_number -= 4
 
-            if substring1[1] == "terminate":
+            if "terminate" in substring1[1]:
+                print('daniel ohed united amiti')##########################
                 break
             continue
         if substring1[2] == "smallPacket" and sequence_number == int(substring1[1]):
