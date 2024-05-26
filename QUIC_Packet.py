@@ -48,11 +48,11 @@ class smallPacket:
 
 
 def turn_toString(LargePacket):
-    return str(LargePacket.get_id()) + "," + str(LargePacket.get_type()) + ", LargePacket"
+    return str(LargePacket.get_id()) + "," + str(LargePacket.get_type()) + ",LargePacket"
 
 
 def turn_toString1(smallPacket):
-    return str(smallPacket.get_data()) + "," + str(smallPacket.get_number()) + ", smallPacket"
+    return str(smallPacket.get_data()) + "," + str(smallPacket.get_number()) + ",smallPacket"
 
 
 def turn_backString(a):
