@@ -3,7 +3,9 @@ import string
 import random
 import QUIC_Packet
 import time
-file_size = 2 * 1000 * 100
+from datetime import datetime
+
+file_size = 5 * 1000 * 100
 sending_loop = file_size // 5000 #TODO: replace this
 window_size = 5
 packet_data_buffer = 1000
@@ -17,8 +19,8 @@ def send_message(server_ip, server_port):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sequence_number = 1
     buffer_counter = 0
-    client_socket.settimeout(0.2)
     file = generate_random_data(file_size)
+    start_time = datetime.now()
 
     try:
         SYN_Packet = QUIC_Packet.LargePacket("214797367", "SYN") #TODO: change the packet id to something reasonable (cant be just a random id)
@@ -37,43 +39,49 @@ def send_message(server_ip, server_port):
         stop_loop = False
         i = 1
 
-        while file[(packet_data_buffer * buffer_counter) : (packet_data_buffer * (buffer_counter + 1))] != '':
-            if i == sending_loop:
-                packet = QUIC_Packet.LargePacket(sequence_number, "terminate")
-                client_socket.sendto(QUIC_Packet.turn_toString(packet).encode(), (server_ip, server_port))
-                break
+        while file[(packet_data_buffer * buffer_counter) : (packet_data_buffer * (buffer_counter + 1))] != b'':
+            # if i == sending_loop:
+            #     packet = QUIC_Packet.LargePacket(sequence_number, "terminate")
+            #     client_socket.sendto(QUIC_Packet.turn_toString(packet).encode(), (server_ip, server_port))
+            #     break
+            #
+            # i += 1
 
-            i += 1
+            while True:
+                for j in range(0, window_size):
+                    #TODO: change packet1's name. give it a meaningful name
+                    packet1 = QUIC_Packet.smallPacket(str(sequence_number), file[(packet_data_buffer * buffer_counter) :
+                                                                                 (packet_data_buffer * (buffer_counter + 1))])
+                                                                              # This iterates over the file using a buffer
+                    client_socket.sendto(QUIC_Packet.turn_toString1(packet1).encode(), (server_ip, server_port))
+                    time.sleep(0.002)
+                    sequence_number += 1
+                    buffer_counter += 1
 
-            for j in range(0, window_size):
-                #TODO: change packet1's name. give it a meaningful name
-                packet1 = QUIC_Packet.smallPacket(str(sequence_number), file[(packet_data_buffer * buffer_counter) :
-                                                                             (packet_data_buffer * (buffer_counter + 1))])
-                                                                          # This iterates over the file using a buffer
-                client_socket.sendto(QUIC_Packet.turn_toString1(packet1).encode(), (server_ip, server_port))
-                sequence_number += 1
-                buffer_counter += 1
+                finish_sending = QUIC_Packet.LargePacket("214797367", "SYN") #TODO: change this to 'ACK'!!!!!
 
-            finish_sending = QUIC_Packet.LargePacket("214797367", "SYN")
-            client_socket.sendto(QUIC_Packet.turn_toString(finish_sending).encode(), (server_ip, server_port))
+                client_socket.sendto(QUIC_Packet.turn_toString(finish_sending).encode(), (server_ip, server_port))
 
-            response, server_address = client_socket.recvfrom(1024)
-            subString = QUIC_Packet.turn_backString(response.decode())
-            # if client_socket.timeout:
-            #     finish_sending = QUIC_Packet.LargePacket("214797367", "SYN")
-            #     client_socket.sendto(QUIC_Packet.turn_toString(finish_sending).encode(), (server_ip, server_port))
+                response, server_address = client_socket.recvfrom(1024)
+                subString = QUIC_Packet.turn_backString(response.decode())
 
-            if subString[1] == "terminate":
-                if subString[0] == "326065646":
-                    sequence_number = sequence_number - window_size
+                if subString[1] == "terminate":
+                    if subString[0] == "326065646":
+                        sequence_number = sequence_number - window_size
+                        break
 
-                else:
-                    sequence_number = int(subString[0])
-            if subString[1] == "ACK":
-                print("ACK received")
+                    else:
+                        sequence_number = int(subString[0])
+                if subString[1] == "ACK":
+                    print("ACK received")
+                    break
+        packet = QUIC_Packet.LargePacket(sequence_number, "terminate")
+        client_socket.sendto(QUIC_Packet.turn_toString(packet).encode(), (server_ip, server_port))
 
     finally:
         client_socket.close()
+        end_time = datetime.now()
+        print('Duration: {}'.format(end_time - start_time))
 
 
 if __name__ == "__main__":
