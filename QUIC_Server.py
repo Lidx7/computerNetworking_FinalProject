@@ -12,6 +12,7 @@ def start_server(ip, port):
     # Create a UDP socket
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_socket.bind((ip, port))
+    server_socket.settimeout(5)
     print(f"UDP server listening on {ip}:{port}")
 
     response, server_address = server_socket.recvfrom(1024) #TODO: consider making 1024 a constatnt (and maybe even mke it bigger)
@@ -33,7 +34,12 @@ def start_server(ip, port):
     five_packets = ""
     try:
         while True:
-            data, address = server_socket.recvfrom(1024)
+            try:
+                data, address = server_socket.recvfrom(1024)
+            except socket.timeout:
+                good_packet_sending = QUIC_Packet.LargePacket(326065646, "ACK")
+                server_socket.sendto(QUIC_Packet.turn_toString(good_packet_sending).encode(), server_address)
+                continue
             substring1 = QUIC_Packet.turn_backString(data.decode()) #TODO: change substring1's name and give it a meaningful name
 
             if substring1[2] == "LargePacket":
